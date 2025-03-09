@@ -1,13 +1,16 @@
 "use client";
 
 import type React from "react";
-
+import OpenAI from "openai";
+import Groq from "groq-sdk";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import axios from "axios";
+
 import {
   Select,
   SelectContent,
@@ -31,6 +34,16 @@ export default function AssessmentForm() {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [otherArea, setOtherArea] = useState("");
 
+  const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API,
+    dangerouslyAllowBrowser: true,
+  });
+
+  const groq = new Groq({
+    apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
+    dangerouslyAllowBrowser: true,
+  });
+
   const affectedAreasList = [
     "Scalp",
     "Face",
@@ -53,22 +66,158 @@ export default function AssessmentForm() {
     );
   };
 
+  // Cloudinary image upload function
+  const uploadImageToCloudinary = async (buffer: BlobPart) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", new Blob([buffer]));
+      formData.append("upload_preset", "trikl-images");
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_CLOUDINARY_URL as string,
+        formData
+      );
+      const imageUrl = response.data.url;
+      return imageUrl;
+    } catch (error) {
+      console.error("Error uploading image to Cloudinary:", error);
+      throw error;
+    }
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
+    // Convert imagePreview Data URL to Blob
+    const imageResponse = await fetch(imagePreview as string);
+    const imageBlob = await imageResponse.blob();
+
+    // Upload image to Cloudinary
+    const imageUrl = await uploadImageToCloudinary(imageBlob);
+
+    console.log("image URL >>>", imageUrl);
+
+    const affectedAreasDescription = selectedAreas
+      .concat(otherArea)
+      .filter(Boolean)
+      .join(", ");
+
+    const prompt = `Which skin tone best represents you? ${skinColor}
+Which country are you currently in? ${geography}
+
+What area of the body is shown in the image? ${location}
+
+Are there any other affected areas on your body? ${affectedAreasDescription}
+
+What's your age? ${age}
+
+Assess the following attached image and identify the following, identify the type of psoriasis and suggest appropriate treatments, also mention the relevantand closest organizations which can provide the usr with some guidance :
+
+const assessmentResults = {
+  patientName: "",
+  isPsoriasis? // true or false,
+  date: "",
+  imageUrl: "",
+  psoriasisType: "",
+  severity: null, // Percentage representation of severity
+  severityText: "",
+  description: "",
+  affectedAreas: [],
+  skinTone: "",
+  location: "",
+  ageGroup: "",
+  commonSymptoms: [],
+  treatments: [
+    {
+      category: "Topical Treatments",
+      options: [],
+    },
+    {
+      category: "Light Therapy",
+      options: [],
+    },
+    {
+      category: "Systemic Medications",
+      options: [],
+    },
+  ],
+  organizations: [
+    {
+      name: "",
+      type: "",
+      website: "",
+      phone: "",
+      email: "",
+      address: "",
+      distance: "",
+    },
+    {
+      name: "",
+      type: "",
+      website: "",
+      phone: "",
+      email: "",
+      address: "",
+      distance: "",
+    },
+    {
+      name: "",
+      type: "",
+      website: "",
+      phone: "",
+      email: "",
+      address: "",
+      distance: "",
+    },
+  ],
+}
+  `;
+
+    // Simulate API call to Openai
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.5-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: imageUrl,
+                detail: "low",
+              },
+            },
+          ],
+        },
+      ],
+      store: true,
+    });
+
+    // Simulate API call to Grog
+
+    const grogResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `Mention the relevant and closest organizations which can provide the help with Psoriasis near ${geography}.`,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
+    console.log("response >>>>", response.choices[0].message.content);
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -323,9 +472,9 @@ export default function AssessmentForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={
-              !imagePreview || !location || !area || !age || isSubmitting
-            }
+            // disabled={
+            //   !imagePreview || !location || !area || !age || isSubmitting
+            // }
           >
             {isSubmitting ? "Submitting..." : "Submit Assessment"}
           </Button>
