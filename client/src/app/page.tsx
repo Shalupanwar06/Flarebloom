@@ -90,7 +90,7 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-7xl/none">
-                    The most inclusive psoriasis detection
+                    AI-Powered Psoriasis Assessment
                   </h1>
                   <p className="max-w-[580px] text-muted-foreground md:text-xl">
                     FlareBloom uses AI-powered image analysis to help you assess

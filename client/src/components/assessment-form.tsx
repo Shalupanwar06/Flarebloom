@@ -60,6 +60,49 @@ export default function AssessmentForm() {
     "Nails",
   ];
 
+  const skinTones = [
+    {
+      value: "skin-1",
+      gradient: "bg-[radial-gradient(circle,#f8e0d6,#e6c7b5)]",
+    },
+    {
+      value: "skin-2",
+      gradient: "bg-[radial-gradient(circle,#f7e6cd,#e5cfae)]",
+    },
+    {
+      value: "skin-3",
+      gradient: "bg-[radial-gradient(circle,#f5dcb8,#dbb98f)]",
+    },
+    {
+      value: "skin-4",
+      gradient: "bg-[radial-gradient(circle,#d5b894,#b8926d)]",
+    },
+    {
+      value: "skin-5",
+      gradient: "bg-[radial-gradient(circle,#b28a64,#9b7048)]",
+    },
+    {
+      value: "skin-6",
+      gradient: "bg-[radial-gradient(circle,#906945,#765339)]",
+    },
+    {
+      value: "skin-7",
+      gradient: "bg-[radial-gradient(circle,#734c34,#5d4037)]",
+    },
+    {
+      value: "skin-8",
+      gradient: "bg-[radial-gradient(circle,#5a382a,#4e342e)]",
+    },
+    {
+      value: "skin-9",
+      gradient: "bg-[radial-gradient(circle,#422a1f,#3e2723)]",
+    },
+    {
+      value: "skin-10",
+      gradient: "bg-[radial-gradient(circle,#241815,#191714)]",
+    },
+  ];
+
   const handleCheckboxChange = (area: string) => {
     setSelectedAreas((prev) =>
       prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
@@ -308,6 +351,34 @@ const assessmentResults = {
           </div>
 
           <div className="space-y-2">
+            <Label>Which skin tone best represents you?</Label>
+
+            <div className="flex justify-between gap-2">
+              {skinTones.map((tone) => (
+                <button
+                  key={tone.value}
+                  type="button"
+                  className={`relative w-full h-14 rounded-md border transition ${
+                    tone.gradient
+                  } ${
+                    skinColor === tone.value
+                      ? "ring-2 ring-primary"
+                      : "border-gray-300"
+                  }`}
+                  onClick={() => setSkinColor(tone.value)}
+                >
+                  {skinColor === tone.value && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white drop-shadow-md" />
+                    </span>
+                  )}
+                  <span className="sr-only">{tone.value}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="geography">
               Which country are you currently in?
             </Label>
@@ -426,47 +497,6 @@ const assessmentResults = {
                 </Label>
               </div>
             </RadioGroup>
-          </div>
-
-          {/* Add the skin color selector component after the age RadioGroup and before the submit button */}
-          <div className="space-y-2">
-            <Label>Which skin tone best represents you?</Label>
-            <div className="grid grid-cols-5 gap-1 sm:grid-cols-10">
-              {[
-                { value: "skin-1", color: "#FFDBAC", label: "Type I" },
-                { value: "skin-2", color: "#F1C27D", label: "Type II" },
-                { value: "skin-3", color: "#E0AC69", label: "Type III" },
-                { value: "skin-4", color: "#C68642", label: "Type IV" },
-                { value: "skin-5", color: "#8D5524", label: "Type V" },
-                { value: "skin-6", color: "#765339", label: "Type VI" },
-                { value: "skin-7", color: "#5D4037", label: "Type VII" },
-                { value: "skin-8", color: "#4E342E", label: "Type VIII" },
-                { value: "skin-9", color: "#3E2723", label: "Type IX" },
-                { value: "skin-10", color: "#191714", label: "Type X" },
-              ].map((skin) => (
-                <button
-                  key={skin.value}
-                  type="button"
-                  className={`relative h-10 flex flex-col items-center justify-center border ${
-                    skinColor === skin.value
-                      ? "ring-2 ring-primary box-border"
-                      : ""
-                  }`}
-                  onClick={() => setSkinColor(skin.value)}
-                  style={{ backgroundColor: skin.color }}
-                >
-                  <span className="sr-only">{skin.label}</span>
-                  {skinColor === skin.value && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white drop-shadow-[0_0_1px_rgba(0,0,0,0.5)]" />
-                    </span>
-                  )}
-                  {/* <span className="mt-6 text-xs text-white drop-shadow-[0_0_1px_rgba(0,0,0,0.8)]">
-                    {skin.label}
-                  </span> */}
-                </button>
-              ))}
-            </div>
           </div>
 
           <Button
