@@ -229,26 +229,26 @@ Assess the following attached image and identify the following, identify the typ
 }
   `;
 
-    // Simulate API call to Openai
-    const response = await openai.chat.completions.create({
-      model: "gpt-4.5-preview",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageUrl,
-                detail: "low",
-              },
-            },
-          ],
-        },
-      ],
-      store: true,
-    });
+    // // Simulate API call to Openai
+    // const response = await openai.chat.completions.create({
+    //   model: "gpt-4.5-preview",
+    //   messages: [
+    //     {
+    //       role: "user",
+    //       content: [
+    //         { type: "text", text: prompt },
+    //         {
+    //           type: "image_url",
+    //           image_url: {
+    //             url: imageUrl,
+    //             detail: "low",
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   store: true,
+    // });
 
     // Simulate API call to Grog
 
@@ -256,16 +256,22 @@ Assess the following attached image and identify the following, identify the typ
       messages: [
         {
           role: "user",
-          content: `Mention the relevant and closest organizations which can provide the help with Psoriasis near ${geography}.`,
+          content: prompt,
         },
       ],
+      response_format: { type: "json_object" },
       model: "llama-3.3-70b-versatile",
     });
 
-    const finAns = response.choices[0].message.content;
-    // console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
-    console.log("intermediate response >>>>", finAns);
+    console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
+    const finAns = grogResponse.choices[0].message.content;
+    // const finAns = response.choices[0].message.content;
 
+    // console.log("intermediate response >>>>", finAns);
+
+    console.log("finAns >>>", typeof finAns);
+
+    // const assessmentResults = JSON.parse(finAns);
     setFinalReport(finAns);
 
     setTimeout(() => {
