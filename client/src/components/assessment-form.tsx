@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Upload } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
+import ResultsPage from "@/app/ResultsPage";
 
 export default function AssessmentForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -30,6 +31,8 @@ export default function AssessmentForm() {
   const [skinColor, setSkinColor] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [uploadedImg, setUploadedImg] = useState<string | null>("");
+  const [finalReport, setFinalReport] = useState<string | null>(null);
 
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [otherArea, setOtherArea] = useState("");
@@ -120,6 +123,7 @@ export default function AssessmentForm() {
         formData
       );
       const imageUrl = response.data.url;
+      setUploadedImg(imageUrl);
       return imageUrl;
     } catch (error) {
       console.error("Error uploading image to Cloudinary:", error);
@@ -163,9 +167,9 @@ Are there any other affected areas on your body? ${affectedAreasDescription}
 
 What's your age? ${age}
 
-Assess the following attached image and identify the following, identify the type of psoriasis and suggest appropriate treatments, also mention the relevantand closest organizations which can provide the usr with some guidance :
+Assess the following attached image and identify the following, identify the type of psoriasis and suggest appropriate treatments, also mention the relevantand closest organizations which can provide the usr with some guidance. Reply must be json :
 
-const assessmentResults = {
+{
   patientName: "",
   isPsoriasis? // true or false,
   date: "",
@@ -258,8 +262,16 @@ const assessmentResults = {
       model: "llama-3.3-70b-versatile",
     });
 
-    console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
-    console.log("response >>>>", response.choices[0].message.content);
+    const finAns = response.choices[0].message.content;
+    // console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
+    console.log("intermediate response >>>>", finAns);
+    const cleanedResponse = finAns?.replace(
+      /^Final Report =\s*const assessmentResults =\s*/,
+      ""
+    );
+    console.log("final response >>>>", cleanedResponse);
+
+    setFinalReport(cleanedResponse);
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -268,32 +280,36 @@ const assessmentResults = {
   };
 
   if (isSuccess) {
-    return (
-      <Card className="w-full">
-        <CardContent className="pt-6 flex flex-col items-center text-center">
-          <div className="rounded-full bg-primary/10 p-4 mb-4">
-            <Check className="h-8 w-8 text-primary" />
-          </div>
-          <h3 className="text-2xl font-bold mb-2">Assessment Submitted!</h3>
-          <p className="text-muted-foreground mb-6">
-            Thank you for submitting your assessment. We'll analyze your image
-            and provide feedback shortly.
-          </p>
-          <Button
-            onClick={() => {
-              setImagePreview(null);
-              setLocation("");
-              setArea("");
-              setAge("");
-              setIsSuccess(false);
-            }}
-          >
-            Submit Another Assessment
-          </Button>
-        </CardContent>
-      </Card>
-    );
+    return <ResultsPage finalReport={finalReport} uploadedImg={uploadedImg} />;
   }
+
+  // if (isSuccess) {
+  //   return (
+  //     <Card className="w-full">
+  //       <CardContent className="pt-6 flex flex-col items-center text-center">
+  //         <div className="rounded-full bg-primary/10 p-4 mb-4">
+  //           <Check className="h-8 w-8 text-primary" />
+  //         </div>
+  //         <h3 className="text-2xl font-bold mb-2">Assessment Submitted!</h3>
+  //         <p className="text-muted-foreground mb-6">
+  //           Thank you for submitting your assessment. We'll analyze your image
+  //           and provide feedback shortly.
+  //         </p>
+  //         <Button
+  //           onClick={() => {
+  //             setImagePreview(null);
+  //             setLocation("");
+  //             setArea("");
+  //             setAge("");
+  //             setIsSuccess(false);
+  //           }}
+  //         >
+  //           Submit Another Assessment
+  //         </Button>
+  //       </CardContent>
+  //     </Card>
+  //   );
+  // }
 
   return (
     <Card className="w-full">
