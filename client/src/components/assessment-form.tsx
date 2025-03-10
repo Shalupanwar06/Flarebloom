@@ -265,13 +265,8 @@ Assess the following attached image and identify the following, identify the typ
     const finAns = response.choices[0].message.content;
     // console.log("GrogResponse ", grogResponse.choices[0]?.message?.content);
     console.log("intermediate response >>>>", finAns);
-    const cleanedResponse = finAns?.replace(
-      /^Final Report =\s*const assessmentResults =\s*/,
-      ""
-    );
-    console.log("final response >>>>", cleanedResponse);
 
-    setFinalReport(cleanedResponse);
+    setFinalReport(finAns);
 
     setTimeout(() => {
       setIsSubmitting(false);

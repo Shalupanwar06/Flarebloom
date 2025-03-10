@@ -122,7 +122,10 @@ export default function ResultsPage({ finalReport, uploadedImg }) {
     ],
   };
 
-  const assessmentResults = finalReport || assessmentSample;
+  const assessmentResults = JSON.parse(finalReport);
+
+  console.log("assessmentResults >>>", typeof assessmentResults);
+  console.log("assessmentResults >>>", assessmentResults?.patientName);
 
   const toggleExpand = () => {
     setExpanded(!expanded);
@@ -180,7 +183,7 @@ export default function ResultsPage({ finalReport, uploadedImg }) {
               <div className="flex flex-col items-center justify-center">
                 <div className="relative h-[280px] w-[280px] rounded-lg overflow-hidden border border-border">
                   <Image
-                    src={assessmentResults?.imageUrl || "/placeholder.svg"}
+                    src={uploadedImg || "/placeholder.svg"}
                     alt="Uploaded skin image"
                     fill
                     className="object-cover"
